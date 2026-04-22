@@ -1,47 +1,97 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./App.css";
 
 function App() {
   const [text, setText] = useState("");
-  const [out, setOut] = useState("");
+  const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(()=>{
-    if(!text){
-      setOut("");
+  const API_URL =
+    "https://braille-translator-kg5f.onrender.com/translate";
+
+  useEffect(() => {
+    if (!text) {
+      setOutput("");
       return;
     }
 
-    const t = setTimeout(async()=>{
-      try{
-        const res = await axios.post(
-          "https://braille-translator-kg5f.onrender.com/translate",
-          { text }
-        );
-        setOut(res.data.result);
-      }catch{
-        setOut("Backend error");
-      }
-    },300);
+    const timer = setTimeout(() => {
+      translateText(text);
+    }, 400);
 
-    return ()=>clearTimeout(t);
-  },[text]);
+    return () => clearTimeout(timer);
+  }, [text]);
+
+  const translateText = async (input) => {
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        API_URL,
+        { text: input },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("API Response:", res.data);
+
+      setOutput(res.data.result);
+    } catch (err) {
+      console.error("Error:", err);
+
+      // 🔥 Retry once (for Render sleep)
+      try {
+        await new Promise((r) => setTimeout(r, 2000));
+
+        const retry = await axios.post(
+          API_URL,
+          { text: input },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        setOutput(retry.data.result);
+      } catch {
+        setOutput("Server waking up... please try again ⏳");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(output);
+  };
 
   return (
-    <div style={{maxWidth:800, margin:"40px auto"}}>
-      <h1>Braille Translator</h1>
+    <div className="app">
+      <div className="card">
+        <h1>Braille Translator</h1>
 
-      <textarea
-        value={text}
-        onChange={e=>setText(e.target.value)}
-        placeholder="English / Hindi / Marathi"
-        style={{width:"100%", height:120}}
-      />
+        <label>Enter Text</label>
+        <textarea
+          placeholder="Type text..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
 
-      <textarea
-        value={out}
-        readOnly
-        style={{width:"100%", height:120, marginTop:20}}
-      />
+        <label>Braille Output (Flipped + Mirrored)</label>
+        <textarea
+          value={loading ? "Translating..." : output}
+          readOnly
+        />
+
+        <button onClick={copyToClipboard}>
+          Copy Output
+        </button>
+      </div>
     </div>
   );
 }
