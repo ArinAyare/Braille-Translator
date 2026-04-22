@@ -73,7 +73,7 @@ function App() {
   return (
     <div className="app">
       <div className="card">
-        <h1>Braille Translator</h1>
+        <h1>BeingJigyaasu's Braille Translator</h1>
 
         <label>Enter Text</label>
         <textarea
