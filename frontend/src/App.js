@@ -14,7 +14,7 @@ function App() {
     const t = setTimeout(async()=>{
       try{
         const res = await axios.post(
-          "https://braille-translator-kg5f.onrender.com",
+          "https://braille-translator-kg5f.onrender.com/translate",
           { text }
         );
         setOut(res.data.result);
