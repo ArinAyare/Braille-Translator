@@ -33,18 +33,18 @@ function translate(text) {
 
   for (let char of text) {
 
-    // Preserve line breaks
+    // preserve line breaks
     if (char === '\n') {
       result += '\n';
       continue;
     }
 
-    // Capital letters
+    // capital letters
     if (char >= 'A' && char <= 'Z') {
       result += CAPITAL + (brailleMap[char.toLowerCase()] || '');
     }
 
-    // Lowercase + punctuation
+    // normal chars
     else {
       result += brailleMap[char] || '';
     }
@@ -53,7 +53,7 @@ function translate(text) {
   return result;
 }
 
-/* ---------------- FLIP (DOT LEVEL) ---------------- */
+/* ---------------- FLIP ---------------- */
 
 function flipChar(ch) {
   const code = ch.charCodeAt(0);
@@ -99,12 +99,12 @@ function transform(text) {
 
 /* ---------------- ROUTES ---------------- */
 
-// Health check (important for Render)
+// ✅ Root route (fix for "Cannot GET /")
 app.get('/', (req, res) => {
   res.send("Braille Translator Backend is running 🚀");
 });
 
-// Main API
+// ✅ Main API
 app.post('/translate', (req, res) => {
   try {
     const { text } = req.body;
@@ -118,14 +118,14 @@ app.post('/translate', (req, res) => {
     res.json({ result });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
+    console.error("Server Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
 /* ---------------- SERVER ---------------- */
 
-// 🔥 IMPORTANT for deployment
+// 🔥 REQUIRED for Render
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
